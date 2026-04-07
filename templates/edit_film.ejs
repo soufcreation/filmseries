@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier <%= film.titre %> - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-play-circle"></i> Streaming
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Accueil</a>
+                    </li>
+                </ul>
+                <form class="d-flex" action="/search" method="get">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Rechercher un film...">
+                    <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
+                </form>
+                <ul class="navbar-nav ms-2">
+                    <% if (session && session.user) { %>
+                    <li class="nav-item">
+                        <a class="btn btn-danger ms-2" href="/admin">Admin</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light ms-2" href="/logout">Déconnexion</a>
+                    </li>
+                    <% } else { %>
+                    <li class="nav-item">
+                        <a class="btn btn-primary ms-2" href="/login">Connexion</a>
+                    </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header bg-dark">
+                            <h4 class="mb-0">Modifier le film</h4>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="/admin/edit/<%= film.id %>" enctype="multipart/form-data">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <div class="mb-3">
+                                    <label for="titre" class="form-label">Titre du film *</label>
+                                    <input type="text" class="form-control" id="titre" name="titre" value="<%= film.titre %>" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="categorie" class="form-label">Catégorie *</label>
+                                    <select class="form-control" id="categorie" name="categorie" required>
+                                        <option value="">Sélectionner une catégorie</option>
+                                        <option value="action" <%= film.categorie === 'action' ? 'selected' : '' %>>Action</option>
+                                        <option value="aventure" <%= film.categorie === 'aventure' ? 'selected' : '' %>>Aventure</option>
+                                        <option value="comédie" <%= film.categorie === 'comédie' ? 'selected' : '' %>>Comédie</option>
+                                        <option value="drame" <%= film.categorie === 'drame' ? 'selected' : '' %>>Drame</option>
+                                        <option value="fantastique" <%= film.categorie === 'fantastique' ? 'selected' : '' %>>Fantastique</option>
+                                        <option value="horreur" <%= film.categorie === 'horreur' ? 'selected' : '' %>>Horreur</option>
+                                        <option value="comédie musicale" <%= film.categorie === 'comédie musicale' ? 'selected' : '' %>>Comédie musicale</option>
+                                        <option value="mystère" <%= film.categorie === 'mystère' ? 'selected' : '' %>>Mystère</option>
+                                        <option value="romance" <%= film.categorie === 'romance' ? 'selected' : '' %>>Romance</option>
+                                        <option value="science-fiction" <%= film.categorie === 'science-fiction' ? 'selected' : '' %>>Science-fiction</option>
+                                        <option value="sport" <%= film.categorie === 'sport' ? 'selected' : '' %>>Sport</option>
+                                        <option value="thriller" <%= film.categorie === 'thriller' ? 'selected' : '' %>>Thriller</option>
+                                        <option value="western" <%= film.categorie === 'western' ? 'selected' : '' %>>Western</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="4"><%= film.description %></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="video_url" class="form-label">URL de la vidéo *</label>
+                                    <input type="url" class="form-control" id="video_url" name="video_url" value="<%= film.video_url %>" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cover" class="form-label">Affiche du film</label>
+                                    <input type="file" class="form-control" id="cover" name="cover" accept="image/*">
+                                    <small class="text-muted">Laissez vide pour garder l'image actuelle</small>
+                                    <div class="mt-2">
+                                        <img src="<%= film.cover %>" alt="Affiche actuelle" class="img-thumbnail" style="max-height: 100px;">
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-check-circle"></i> Enregistrer
+                                    </button>
+                                    <a href="/admin" class="btn btn-outline-secondary">
+                                        Annuler
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2026 Streaming. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

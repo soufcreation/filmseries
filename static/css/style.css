@@ -1,0 +1,919 @@
+/* ============================================================
+   NETFLIX-STYLE DARK THEME — Films Streaming
+   ============================================================ */
+
+/* ── Design Tokens ────────────────────────────────────────── */
+:root {
+    --bg-primary: #141414;
+    --bg-secondary: #181818;
+    --bg-card: #1f1f1f;
+    --bg-card-hover: #2a2a2a;
+    --accent: #E50914;
+    --accent-hover: #f40612;
+    --accent-glow: rgba(229, 9, 20, 0.45);
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --text-muted: #808080;
+    --border-color: #2f2f2f;
+    --navbar-bg: rgba(20, 20, 20, 0.92);
+    --card-radius: 6px;
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ── Reset & Base ─────────────────────────────────────────── */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+/* ── Main Content ─────────────────────────────────────────── */
+.main-content {
+    flex: 1;
+    padding-top: 68px; /* navbar height */
+}
+
+/* ============================================================
+   NAVBAR — Fixed, semi-transparent, Netflix-style
+   ============================================================ */
+.navbar {
+    background: var(--navbar-bg) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 10px 0;
+    transition: background var(--transition-normal);
+    z-index: 1050;
+}
+
+.navbar-brand {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent) !important;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    transition: color var(--transition-fast);
+}
+
+.navbar-brand:hover {
+    color: var(--accent-hover) !important;
+}
+
+.navbar-brand i {
+    margin-right: 6px;
+    font-size: 1.4rem;
+}
+
+.nav-link {
+    color: var(--text-secondary) !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 8px 16px !important;
+    transition: color var(--transition-fast);
+}
+
+.nav-link:hover {
+    color: var(--text-primary) !important;
+}
+
+/* Navbar search */
+.navbar .form-control {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid transparent;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: all var(--transition-fast);
+}
+
+.navbar .form-control::placeholder {
+    color: var(--text-muted);
+}
+
+.navbar .form-control:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--text-secondary);
+    box-shadow: none;
+    color: var(--text-primary);
+}
+
+.navbar .btn-outline-light {
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.navbar .btn-outline-light:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   CATEGORY TABS — Horizontal scroll, red active indicator
+   ============================================================ */
+.category-nav {
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0;
+    position: sticky;
+    top: 68px;
+    z-index: 1040;
+}
+
+.category-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    list-style: none;
+    margin: 0;
+    padding: 0 24px;
+    gap: 0;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.category-tabs::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.category-tabs li {
+    flex-shrink: 0;
+}
+
+.category-tabs a {
+    display: block;
+    padding: 14px 20px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    position: relative;
+    transition: color var(--transition-fast);
+}
+
+.category-tabs a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 80%;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 3px 3px 0 0;
+    transition: transform var(--transition-normal);
+}
+
+.category-tabs a:hover {
+    color: var(--text-primary);
+}
+
+.category-tabs a.active {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.category-tabs a.active::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+/* ============================================================
+   FILM ROWS — Netflix horizontal scroll
+   ============================================================ */
+.film-row {
+    padding: 20px 0 30px;
+}
+
+.film-row h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    padding: 0 48px;
+    margin-bottom: 14px;
+    letter-spacing: -0.2px;
+}
+
+/* ── Film Grid → Horizontal Scroll ────────────────────────── */
+.film-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px 48px 20px;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.film-grid::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+/* ============================================================
+   FILM CARDS — Netflix style
+   ============================================================ */
+.film-card {
+    display: block;
+    flex: 0 0 200px;
+    text-decoration: none;
+    transition: transform var(--transition-slow);
+    cursor: pointer;
+    position: relative;
+}
+
+.film-card:hover {
+    transform: scale(1.08);
+    z-index: 10;
+}
+
+.film-poster {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--card-radius);
+    aspect-ratio: 2 / 3;
+    background-color: var(--bg-card);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    transition: box-shadow var(--transition-normal);
+}
+
+.film-card:hover .film-poster {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.film-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+    display: block;
+}
+
+.film-card:hover .film-poster img {
+    transform: scale(1.05);
+}
+
+/* ── Play Icon Overlay ────────────────────────────────────── */
+.film-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.15) 50%,
+        rgba(0, 0, 0, 0.65) 100%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.film-card:hover .film-overlay {
+    opacity: 1;
+}
+
+.play-icon {
+    font-size: 3rem;
+    color: var(--text-primary);
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+    transform: scale(0.85);
+    transition: transform var(--transition-fast);
+}
+
+.film-card:hover .play-icon {
+    transform: scale(1);
+}
+
+/* ── Film Info ────────────────────────────────────────────── */
+.film-info {
+    padding: 10px 4px 4px;
+}
+
+.film-title {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.88rem;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.film-category {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   HERO SECTION — Cinematic banner
+   ============================================================ */
+.hero-section {
+    background: linear-gradient(
+        135deg,
+        var(--bg-secondary) 0%,
+        var(--bg-card) 50%,
+        var(--bg-secondary) 100%
+    );
+    padding: 50px 30px;
+    border-radius: 0;
+    margin-bottom: 10px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at center, rgba(229, 9, 20, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero-section h1 {
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    position: relative;
+}
+
+.hero-section h1 span {
+    color: var(--accent);
+}
+
+.hero-section p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    position: relative;
+}
+
+/* ============================================================
+   FILM DETAIL PAGE
+   ============================================================ */
+.film-detail-card {
+    background-color: var(--bg-card);
+    padding: 35px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+}
+
+.film-title-detail {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.film-description {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 1rem;
+}
+
+/* ============================================================
+   BUTTONS — Netflix style
+   ============================================================ */
+.btn-continue {
+    background: var(--accent);
+    border: none;
+    color: white;
+    padding: 14px 32px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border-radius: 5px;
+    transition: all var(--transition-fast);
+    letter-spacing: 0.3px;
+}
+
+.btn-continue:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px var(--accent-glow);
+    color: white;
+}
+
+.btn-continue:active {
+    transform: translateY(0);
+}
+
+/* Override Bootstrap buttons for dark theme */
+.btn-primary {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    font-weight: 600;
+    transition: all var(--transition-fast);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: 0 0 0 0.2rem var(--accent-glow);
+}
+
+.btn-danger {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+.btn-danger:hover {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+.btn-outline-light {
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.btn-outline-light:hover {
+    background: var(--bg-card);
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+}
+
+.btn-outline-secondary {
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.btn-outline-secondary:hover {
+    background: var(--bg-card);
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   AD SECTION
+   ============================================================ */
+.ad-section {
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.ad-placeholder {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+    padding: 40px 20px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    border: 1px dashed var(--border-color);
+}
+
+.ad-placeholder i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+}
+
+.ad-placeholder span {
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: block;
+    color: var(--text-secondary);
+    letter-spacing: 2px;
+}
+
+.ad-placeholder small {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.ad-placeholder-2 {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+}
+
+/* ============================================================
+   LOGIN PAGE
+   ============================================================ */
+.login-card {
+    background-color: var(--bg-card);
+    padding: 45px 40px;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    margin-top: 60px;
+    border: 1px solid var(--border-color);
+}
+
+.login-card .bi-person-circle {
+    color: var(--accent);
+}
+
+.login-card h2 {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* ============================================================
+   ADMIN DASHBOARD
+   ============================================================ */
+.admin-cover-thumb {
+    width: 50px;
+    height: 75px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================
+   PLAYER PAGE
+   ============================================================ */
+.player-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.video-wrapper {
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border-color);
+}
+
+.video-player {
+    width: 100%;
+    max-height: 80vh;
+    display: block;
+}
+
+/* ============================================================
+   CARDS (Bootstrap override)
+   ============================================================ */
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.card-body {
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+.form-control {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 5px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    transition: all var(--transition-fast);
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+.form-control:focus {
+    background-color: var(--bg-secondary);
+    border-color: var(--accent);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.2rem var(--accent-glow);
+}
+
+.form-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+}
+
+.input-group-text {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    border-radius: 5px;
+}
+
+/* ============================================================
+   ALERTS
+   ============================================================ */
+.alert {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: rgba(46, 204, 113, 0.12);
+    border-color: rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+}
+
+.alert-danger {
+    background-color: rgba(229, 9, 20, 0.12);
+    border-color: rgba(229, 9, 20, 0.3);
+    color: #ff6b6b;
+}
+
+.alert-info {
+    background-color: rgba(52, 152, 219, 0.12);
+    border-color: rgba(52, 152, 219, 0.3);
+    color: #5dade2;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+    background-color: var(--bg-secondary) !important;
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+    padding: 30px 0;
+}
+
+footer p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* ============================================================
+   TABLES (Admin)
+   ============================================================ */
+.table-dark {
+    --bs-table-bg: var(--bg-secondary);
+    --bs-table-hover-bg: rgba(229, 9, 20, 0.08);
+}
+
+.table {
+    color: var(--text-primary);
+}
+
+.table thead th {
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    border-color: var(--border-color);
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(229, 9, 20, 0.06);
+}
+
+/* ============================================================
+   SCROLLBARS — Hidden but functional (horizontal)
+   ============================================================ */
+
+/* Vertical scrollbar (thin, subtle) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Hide horizontal scrollbars on film rows */
+.film-grid::-webkit-scrollbar,
+.category-tabs::-webkit-scrollbar {
+    height: 0;
+    width: 0;
+}
+
+/* ============================================================
+   FOCUS STATES — Accessibility
+   ============================================================ */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ============================================================
+   RESPONSIVE — Mobile-first breakpoints
+   ============================================================ */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .main-content {
+        padding-top: 60px;
+    }
+
+    .category-nav {
+        top: 60px;
+    }
+
+    .hero-section {
+        padding: 35px 20px;
+    }
+
+    .hero-section h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero-section p {
+        font-size: 0.95rem;
+    }
+
+    .film-row h2 {
+        font-size: 1.15rem;
+        padding: 0 24px;
+    }
+
+    .film-grid {
+        padding: 10px 24px 20px;
+        gap: 8px;
+    }
+
+    .film-card {
+        flex: 0 0 150px;
+    }
+
+    .film-title {
+        font-size: 0.8rem;
+    }
+
+    .film-category {
+        font-size: 0.7rem;
+    }
+
+    .play-icon {
+        font-size: 2.2rem;
+    }
+
+    .film-detail-card {
+        padding: 20px;
+    }
+
+    .film-title-detail {
+        font-size: 1.5rem;
+    }
+
+    .login-card {
+        padding: 30px 24px;
+        margin-top: 40px;
+    }
+
+    .category-tabs a {
+        padding: 12px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+    .film-card {
+        flex: 0 0 130px;
+    }
+
+    .film-grid {
+        padding: 8px 16px 16px;
+        gap: 6px;
+    }
+
+    .film-row h2 {
+        padding: 0 16px;
+        font-size: 1.05rem;
+    }
+
+    .hero-section h1 {
+        font-size: 1.5rem;
+    }
+
+    .navbar-brand {
+        font-size: 1.3rem;
+    }
+}
+
+/* Desktop large */
+@media (min-width: 1200px) {
+    .film-card {
+        flex: 0 0 220px;
+    }
+
+    .film-row h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ============================================================
+   ANIMATIONS — Subtle, performant (<400ms)
+   ============================================================ */
+
+/* Fade-in on page load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.film-row {
+    animation: fadeInUp 0.35s ease forwards;
+}
+
+.film-row:nth-child(2) {
+    animation-delay: 0.05s;
+}
+
+.film-row:nth-child(3) {
+    animation-delay: 0.1s;
+}
+
+/* Shimmer loading effect (for future use) */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.film-poster.loading {
+    background: linear-gradient(
+        90deg,
+        var(--bg-card) 25%,
+        var(--bg-card-hover) 50%,
+        var(--bg-card) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.text-center.py-5 .bi-film {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+.text-center.py-5 p {
+    color: var(--text-secondary);
+}
