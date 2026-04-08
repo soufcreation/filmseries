@@ -9,20 +9,16 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: <%= siteSettings.secondaryColor %>;">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-play-circle"></i> Streaming
+            <a class="navbar-brand site-title" href="/">
+                <span class="stream-text">STREAM</span><span class="place-text">PLACE</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Accueil</a>
-                    </li>
-                </ul>
+                <ul class="navbar-nav me-auto"></ul>
                 <form class="d-flex" action="/search" method="get">
                     <input class="form-control me-2" type="search" name="q" placeholder="Rechercher un film...">
                     <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
@@ -53,6 +49,16 @@
                         <div class="card-header bg-dark">
                             <h4 class="mb-0">Modifier le film</h4>
                         </div>
+
+                        <% if (flash && flash.length > 0) { %>
+                        <% flash.forEach(function(msg) { %>
+                        <div class="alert alert-<%= msg.type === 'error' ? 'danger' : 'success' %> alert-dismissible fade show">
+                            <%= msg.message %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <% }); %>
+                        <% } %>
+
                         <div class="card-body">
                             <form method="POST" action="/admin/edit/<%= film.id %>" enctype="multipart/form-data">
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -67,6 +73,7 @@
                                         <option value="action" <%= film.categorie === 'action' ? 'selected' : '' %>>Action</option>
                                         <option value="aventure" <%= film.categorie === 'aventure' ? 'selected' : '' %>>Aventure</option>
                                         <option value="comédie" <%= film.categorie === 'comédie' ? 'selected' : '' %>>Comédie</option>
+                                        <option value="documentaire" <%= film.categorie === 'documentaire' ? 'selected' : '' %>>Documentaire</option>
                                         <option value="drame" <%= film.categorie === 'drame' ? 'selected' : '' %>>Drame</option>
                                         <option value="fantastique" <%= film.categorie === 'fantastique' ? 'selected' : '' %>>Fantastique</option>
                                         <option value="horreur" <%= film.categorie === 'horreur' ? 'selected' : '' %>>Horreur</option>
@@ -111,9 +118,9 @@
         </div>
     </main>
 
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="text-light py-4 mt-5" style="background-color: <%= siteSettings.secondaryColor %>;">
         <div class="container text-center">
-            <p class="mb-0">&copy; 2026 Streaming. Tous droits réservés.</p>
+            <p class="mb-0"><%- siteSettings.footerText %></p>
         </div>
     </footer>
 

@@ -11,9 +11,11 @@ const PORT = 2000;
 
 const DATA_DIR = path.join(__dirname, 'data');
 const UPLOAD_DIR = path.join(__dirname, 'static/images/covers');
+const LOGO_DIR = path.join(__dirname, 'static/images/logo');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+if (!fs.existsSync(LOGO_DIR)) fs.mkdirSync(LOGO_DIR, { recursive: true });
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'templates'));
@@ -23,7 +25,7 @@ app.use(express.json());
 app.use(session({
     secret: process.env.SESSION_SECRET || 'dev-only-fallback-secret-change-in-production',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: { 
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
@@ -73,7 +75,7 @@ function sanitizeFilename(filename) {
     return path.basename(filename).replace(/[^a-zA-Z0-9.-]/g, '_');
 }
 
-const CATEGORIES = ['action', 'aventure', 'comédie', 'drame', 'fantastique', 'horreur', 'comédie musicale', 'mystère', 'romance', 'science-fiction', 'sport', 'thriller', 'western'];
+const CATEGORIES = ['action', 'aventure', 'comédie', 'documentaire', 'drame', 'fantastique', 'horreur', 'comédie musicale', 'mystère', 'romance', 'science-fiction', 'sport', 'thriller', 'western'];
 
 // ==================== CSRF TOKEN ====================
 
@@ -93,11 +95,9 @@ function csrfToken(req, res, next) {
 function validateCSRF(req, res, next) {
     const token = req.body._csrf || req.query._csrf;
     if (!token || token !== req.session.csrfToken) {
-        req.flash = { type: 'error', message: 'Token de sécurité invalide' };
+        req.flash('error', 'Token de sécurité invalide');
         return res.redirect('back');
     }
-    // Regenerate token after validation
-    req.session.csrfToken = generateCSRFToken();
     next();
 }
 
@@ -146,7 +146,7 @@ function isAdmin(req) {
 function ensureAdmin(req, res, next) {
     if (!isAdmin(req)) {
         req.flash('error', 'Accès refusé');
-        return res.redirect('/login');
+        return res.redirect('/');
     }
     next();
 }
@@ -159,6 +159,14 @@ app.use(csrfToken);
 app.use((req, res, next) => {
     res.locals.session = req.session;
     res.locals.categories = CATEGORIES;
+    res.locals.siteSettings = loadJSON('datasite.json', {
+        name: 'Streaming',
+        logo: '',
+        logoUrl: '',
+        primaryColor: '#0d6efd',
+        secondaryColor: '#212529',
+        footerText: '&copy; 2026 Streaming. Tous droits réservés.'
+    });
     next();
 });
 
@@ -189,6 +197,27 @@ app.get('/search', (req, res) => {
         );
     }
     res.render('index', { films, search_query: req.query.q || '', currentCategory: '' });
+});
+
+// API pour autocomplétion de recherche
+app.get('/api/search', (req, res) => {
+    const query = (req.query.q || '').toLowerCase().trim();
+    if (!query || query.length < 1) {
+        return res.json([]);
+    }
+    
+    const data = loadJSON('films.json', { films: [] });
+    const films = data.films
+        .filter(f => f.titre.toLowerCase().startsWith(query))
+        .slice(0, 8)
+        .map(f => ({
+            id: f.id,
+            titre: f.titre,
+            cover: f.cover,
+            categorie: f.categorie
+        }));
+    
+    res.json(films);
 });
 
 app.get('/film/:id', (req, res) => {
@@ -257,7 +286,8 @@ app.get('/admin/add', ensureAdmin, (req, res) => {
     res.render('add_film');
 });
 
-app.post('/admin/add', ensureAdmin, validateCSRF, upload.single('cover'), (req, res) => {
+// POST route for adding film - multer must run BEFORE validateCSRF
+app.post('/admin/add', ensureAdmin, upload.single('cover'), validateCSRF, (req, res) => {
     try {
         const { titre, description, video_url, categorie } = req.body;
         if (!titre || !video_url || !categorie) {
@@ -304,7 +334,7 @@ app.get('/admin/edit/:id', ensureAdmin, (req, res) => {
     res.render('edit_film', { film });
 });
 
-app.post('/admin/edit/:id', ensureAdmin, validateCSRF, upload.single('cover'), (req, res) => {
+app.post('/admin/edit/:id', ensureAdmin, upload.single('cover'), validateCSRF, (req, res) => {
     try {
         const { titre, description, video_url, categorie } = req.body;
         const data = loadJSON('films.json', { films: [] });
@@ -364,14 +394,74 @@ app.delete('/admin/delete/:id', ensureAdmin, (req, res) => {
     res.json({ success: true });
 });
 
-app.get('/stream/:id', (req, res) => {
-    const data = loadJSON('films.json', { films: [] });
-    const film = data.films.find(f => f.id === parseInt(req.params.id));
-    if (!film || !film.video_url) {
-        return res.status(404).send('Vidéo non trouvée');
+// ==================== ADMIN SITE SETTINGS ====================
+
+// Storage config for logo upload
+const logoStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, LOGO_DIR),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `logo${ext}`);
     }
-    res.redirect(film.video_url);
 });
+const logoUpload = multer({ 
+    storage: logoStorage, 
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|svg|webp/;
+        const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+        const mime = allowed.test(file.mimetype);
+        if (ext && mime) {
+            cb(null, true);
+        } else {
+            cb(new Error('Formats acceptés: JPEG, PNG, SVG, WebP'));
+        }
+    }
+});
+
+app.get('/admin/settings', ensureAdmin, (req, res) => {
+    const siteSettings = loadJSON('datasite.json', {
+        name: 'Streaming',
+        logo: '',
+        logoUrl: '',
+        primaryColor: '#0d6efd',
+        secondaryColor: '#212529',
+        footerText: '&copy; 2026 Streaming. Tous droits réservés.'
+    });
+    res.render('settings', { siteSettings });
+});
+
+app.post('/admin/settings', ensureAdmin, logoUpload.single('logo'), validateCSRF, (req, res) => {
+    try {
+        const { name, logoUrl, primaryColor, secondaryColor, footerText } = req.body;
+        
+        const currentSettings = loadJSON('datasite.json', {});
+        
+        const newSettings = {
+            name: name || 'Streaming',
+            logo: req.file ? `/images/logo/${req.file.filename}` : currentSettings.logo || '',
+            logoUrl: logoUrl || '',
+            primaryColor: primaryColor || '#0d6efd',
+            secondaryColor: secondaryColor || '#212529',
+            footerText: footerText || '&copy; 2026 Streaming. Tous droits réservés.'
+        };
+        
+        // If logo URL is provided, use it instead of uploaded file
+        if (logoUrl && logoUrl.trim()) {
+            newSettings.logo = '';
+            newSettings.logoUrl = logoUrl;
+        }
+        
+        saveJSON('datasite.json', newSettings);
+        
+        req.flash('success', 'Paramètres du site enregistrés');
+        res.redirect('/admin/settings');
+    } catch (error) {
+        req.flash('error', error.message || 'Erreur lors de l\'enregistrement');
+        res.redirect('/admin/settings');
+    }
+});
+
 
 app.use((req, res) => res.status(404).render('404'));
 

@@ -3,30 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streaming - Films en ligne</title>
+    <title><%= siteSettings.name %> - Films en ligne</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: <%= siteSettings.secondaryColor %>;">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-play-circle"></i> Streaming
+            <a class="navbar-brand site-title" href="/">
+                <span class="stream-text">STREAM</span><span class="place-text">PLACE</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Accueil</a>
-                    </li>
-                </ul>
-                <form class="d-flex" action="/search" method="get">
-                    <input class="form-control me-2" type="search" name="q" placeholder="Rechercher...">
-                    <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
-                </form>
+                <ul class="navbar-nav me-auto"></ul>
+                <div class="search-wrapper position-relative">
+                    <form class="d-flex" action="/search" method="get">
+                        <input class="form-control me-2" type="search" name="q" placeholder="Rechercher..." id="searchInput" autocomplete="off">
+                        <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
+                    </form>
+                    <div id="searchResults" class="search-results"></div>
+                </div>
                 <ul class="navbar-nav ms-2">
                     <% if (session && session.user) { %>
                     <li class="nav-item">
@@ -35,11 +34,7 @@
                     <li class="nav-item">
                         <a class="btn btn-outline-light ms-2" href="/logout">Déconnexion</a>
                     </li>
-                    <% } else { %>
-                    <li class="nav-item">
-                        <a class="btn btn-primary ms-2" href="/login">Connexion</a>
-                    </li>
-                    <% } %>
+					<% } %> 
                 </ul>
             </div>
         </div>
@@ -93,12 +88,65 @@
         </div>
     </main>
 
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="text-light py-4 mt-5" style="background-color: <%= siteSettings.secondaryColor %>;">
         <div class="container text-center">
-            <p class="mb-0">&copy; 2026 Streaming. Tous droits réservés.</p>
+            <p class="mb-0"><%- siteSettings.footerText %></p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        let debounceTimer;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+            
+            if (query.length < 1) {
+                searchResults.classList.remove('active');
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch('/api/search?q=' + encodeURIComponent(query))
+                    .then(res => res.json())
+                    .then(films => {
+                        if (films.length === 0) {
+                            searchResults.innerHTML = '<div class="search-no-results">Aucun film trouvé</div>';
+                        } else {
+                            searchResults.innerHTML = films.map(film => `
+                                <a href="/film/${film.id}" class="search-result-item">
+                                    <img src="${film.cover}" alt="${film.titre}" onerror="this.src='/images/covers/default.jpg'">
+                                    <div class="search-result-info">
+                                        <div class="search-result-title">${film.titre}</div>
+                                        <div class="search-result-category">${film.categorie ? film.categorie.charAt(0).toUpperCase() + film.categorie.slice(1) : ''}</div>
+                                    </div>
+                                </a>
+                            `).join('');
+                        }
+                        searchResults.classList.add('active');
+                    })
+                    .catch(() => {
+                        searchResults.innerHTML = '';
+                        searchResults.classList.remove('active');
+                    });
+            }, 300);
+        });
+
+        // Fermer les résultats en cliquant ailleurs
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.remove('active');
+            }
+        });
+
+        // Garder ouvert quand on clique sur les résultats
+        searchResults.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    </script>
 </body>
 </html>
